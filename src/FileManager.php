@@ -201,7 +201,7 @@ class FileManager
      * @param string $content
      * @return void
      */
-    public function saveFile(string $file, string $content): void
+    public function writeFile(string $file, string $content): void
     {
         $openFile = @fopen($file, 'w') or die('Unable to open file: ' . $file);
         @fwrite($openFile, $content) or die('Unable to write to file: ' . $file);
@@ -243,7 +243,7 @@ class FileManager
      * @param string $content
      * @return void
      */
-    public function saveLittleFile(string $file, string $content): void
+    public function writeLittleFile(string $file, string $content): void
     {
         @file_put_contents($file, $content) or die('Unable to save file: ' . $file);
     }
