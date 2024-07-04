@@ -17,15 +17,14 @@ class FileManager
     public array $data = [];
     public int $numberOfFiles = 0;
 
-    public function __construct()
+    /**
+     * Get the version of the FileManager
+     *
+     * @return string
+     */
+    public static function version(): string
     {
-        define('TIGRESS_FILE_MANAGER_VERSION', '1.0.0');
-    }
-
-    public function __destruct()
-    {
-        unset($this->data);
-        unset($this->numberOfFiles);
+        return '1.0.0';
     }
 
     /**
