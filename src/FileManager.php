@@ -3,13 +3,12 @@
 namespace Tigress;
 
 /**
- * Class Data Converter (PHP version 8.3)
+ * Class Data Converter (PHP version 8.4)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 1.0.0
- * @lastmodified 2024-07-04
+ * @version 2024.11.28.0
  * @package Tigress\FileManager
  */
 class FileManager
@@ -24,7 +23,7 @@ class FileManager
      */
     public static function version(): string
     {
-        return '1.0.0';
+        return '2024.11.28';
     }
 
     /**
