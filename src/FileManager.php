@@ -2,13 +2,16 @@
 
 namespace Tigress;
 
+use Exception;
+use ZipArchive;
+
 /**
  * Class Data Converter (PHP version 8.4)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
- * @copyright 2024, rudymas.be. (http://www.rudymas.be/)
+ * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2024.11.28.0
+ * @version 2025.01.16.0
  * @package Tigress\FileManager
  */
 class FileManager
@@ -23,7 +26,48 @@ class FileManager
      */
     public static function version(): string
     {
-        return '2024.11.28';
+        return '2025.01.16';
+    }
+
+    /**
+     * Append content to a file (add content to existing file)
+     *
+     * @param string $file
+     * @param string $content
+     * @return void
+     */
+    public function appendFile(string $file, string $content): void
+    {
+        $openFile = @fopen($file, 'a') or die('Unable to open file: ' . $file);
+        @fwrite($openFile, $content) or die('Unable to write to file: ' . $file);
+        @fclose($openFile) or die('Unable to close file: ' . $file);
+    }
+
+    /**
+     * Add content to a file with a small amount of content
+     *
+     * @param string $file
+     * @param string $content
+     * @return void
+     */
+    public function appendLittleFile(string $file, string $content): void
+    {
+        @file_put_contents($file, $content, FILE_APPEND) or die('Unable to add content to file: ' . $file);
+    }
+
+    /**
+     * Copy a file
+     *
+     * @param string $source
+     * @param string $destination
+     * @return void
+     */
+    public function copyFile(string $source, string $destination): void
+    {
+        if (!file_exists($source)) {
+            die('File not found: ' . $source);
+        }
+        @copy($source, $destination) or die('Unable to copy file: ' . $source . ' to ' . $destination);
     }
 
     /**
@@ -81,30 +125,25 @@ class FileManager
     }
 
     /**
-     * Rename a file
+     * Get the file extension
      *
-     * @param string $oldName
-     * @param string $newName
-     * @return void
+     * @param string $file
+     * @return string
      */
-    public function renameFile(string $oldName, string $newName): void
+    public function fileExtension(string $file): string
     {
-        @rename($oldName, $newName) or die('Unable to rename file: ' . $oldName . ' to ' . $newName);
+        return pathinfo($file, PATHINFO_EXTENSION);
     }
 
     /**
-     * Copy a file
+     * Get the file name
      *
-     * @param string $source
-     * @param string $destination
-     * @return void
+     * @param string $file
+     * @return string
      */
-    public function copyFile(string $source, string $destination): void
+    public function filename(string $file): string
     {
-        if (!file_exists($source)) {
-            die('File not found: ' . $source);
-        }
-        @copy($source, $destination) or die('Unable to copy file: ' . $source . ' to ' . $destination);
+        return pathinfo($file, PATHINFO_FILENAME);
     }
 
     /**
@@ -130,48 +169,6 @@ class FileManager
     }
 
     /**
-     * Read a folder
-     *
-     * The $sort parameter can be set to SCANDIR_SORT_ASCENDING, SCANDIR_SORT_DESCENDING or SCANDIR_SORT_NONE
-     *
-     * @param string $folder
-     * @param int $sort
-     * @return void
-     */
-    public function readFolder(string $folder, int $sort = SCANDIR_SORT_ASCENDING): void
-    {
-        if (substr($folder, -1) !== DIRECTORY_SEPARATOR) {
-            $folder .= DIRECTORY_SEPARATOR;
-        }
-        if (is_dir($folder)) {
-            $this->data = @scandir($folder, $sort) or die('Unable to read folder: ' . $folder);
-            $this->numberOfFiles = count($this->data);
-        }
-    }
-
-    /**
-     * Get the file extension
-     *
-     * @param string $file
-     * @return string
-     */
-    public function fileExtension(string $file): string
-    {
-        return pathinfo($file, PATHINFO_EXTENSION);
-    }
-
-    /**
-     * Get the file name
-     *
-     * @param string $file
-     * @return string
-     */
-    public function filename(string $file): string
-    {
-        return pathinfo($file, PATHINFO_FILENAME);
-    }
-
-    /**
      * Move an uploaded file to a folder with a new name and set the file permissions
      *
      * @param string $originalFile
@@ -193,34 +190,6 @@ class FileManager
     }
 
     /**
-     * Write content to a file (overwrite existing file)
-     *
-     * @param string $file
-     * @param string $content
-     * @return void
-     */
-    public function writeFile(string $file, string $content): void
-    {
-        $openFile = @fopen($file, 'w') or die('Unable to open file: ' . $file);
-        @fwrite($openFile, $content) or die('Unable to write to file: ' . $file);
-        @fclose($openFile) or die('Unable to close file: ' . $file);
-    }
-
-    /**
-     * Append content to a file (add content to existing file)
-     *
-     * @param string $file
-     * @param string $content
-     * @return void
-     */
-    public function appendFile(string $file, string $content): void
-    {
-        $openFile = @fopen($file, 'a') or die('Unable to open file: ' . $file);
-        @fwrite($openFile, $content) or die('Unable to write to file: ' . $file);
-        @fclose($openFile) or die('Unable to close file: ' . $file);
-    }
-
-    /**
      * Read content from a file
      *
      * @param string $file
@@ -232,6 +201,63 @@ class FileManager
         $content = @fread($openFile, filesize($file)) or die('Unable to read file: ' . $file);
         @fclose($openFile) or die('Unable to close file: ' . $file);
         return $content;
+    }
+
+    /**
+     * Read a folder
+     *
+     * The $sort parameter can be set to SCANDIR_SORT_ASCENDING, SCANDIR_SORT_DESCENDING or SCANDIR_SORT_NONE
+     *
+     * @param string $folder
+     * @param int $sort
+     * @return void
+     */
+    public function readFolder(string $folder, int $sort = SCANDIR_SORT_ASCENDING): void
+    {
+        if (substr($folder, -1) !== DIRECTORY_SEPARATOR) {
+            $folder .= DIRECTORY_SEPARATOR;
+        }
+        if (is_dir($folder)) {
+            $this->data = @scandir($folder, $sort) or die('Unable to read folder: ' . $folder);
+            $this->numberOfFiles = count($this->data);
+        }
+    }
+
+    /**
+     * Read a file with a small amount of content
+     *
+     * @param string $file
+     * @return string
+     */
+    public function readLittleFile(string $file): string
+    {
+        return @file_get_contents($file) or die('Unable to read file: ' . $file);
+    }
+
+    /**
+     * Rename a file
+     *
+     * @param string $oldName
+     * @param string $newName
+     * @return void
+     */
+    public function renameFile(string $oldName, string $newName): void
+    {
+        @rename($oldName, $newName) or die('Unable to rename file: ' . $oldName . ' to ' . $newName);
+    }
+
+    /**
+     * Write content to a file (overwrite existing file)
+     *
+     * @param string $file
+     * @param string $content
+     * @return void
+     */
+    public function writeFile(string $file, string $content): void
+    {
+        $openFile = @fopen($file, 'w') or die('Unable to open file: ' . $file);
+        @fwrite($openFile, $content) or die('Unable to write to file: ' . $file);
+        @fclose($openFile) or die('Unable to close file: ' . $file);
     }
 
     /**
@@ -247,25 +273,146 @@ class FileManager
     }
 
     /**
-     * Add content to a file with a small amount of content
+     * Create a ZIP file
      *
-     * @param string $file
-     * @param string $content
+     * @param array $files
+     * @param string $filename
+     * @param string $filepath
      * @return void
      */
-    public function appendLittleFile(string $file, string $content): void
+    public function createZip(array $files, string $filename, string $filepath = ''): void
     {
-        @file_put_contents($file, $content, FILE_APPEND) or die('Unable to add content to file: ' . $file);
+        if ($filepath != '' && !file_exists($filepath)) {
+            mkdir($filepath, 0777, true);
+        }
+
+        if ($filepath) {
+            $zipFile = $filepath . '/' . $filename;
+        } else {
+            $zipFile = $filename;
+        }
+
+        $zip = new ZipArchive();
+        $zip->open($zipFile, ZipArchive::CREATE);
+        foreach ($files as $file) {
+            $zip->addFile($file, basename($file));
+        }
+        $zip->close();
     }
 
     /**
-     * Read a file with a small amount of content
+     * Download a file
      *
-     * @param string $file
-     * @return string
+     * @param string $filename
+     * @param string $filepath
+     * @param string $type
+     * @return void
+     * @throws Exception
      */
-    public function readLittleFile(string $file): string
+    public function download(string $filename, string $filepath, string $type = 'detect'): void
     {
-        return @file_get_contents($file) or die('Unable to read file: ' . $file);
+        if ($filepath) {
+            $downloadFile = $filepath . '/' . $filename;
+        } else {
+            $downloadFile = $filename;
+        }
+
+        if (!file_exists($downloadFile)) {
+            throw new Exception('File not found: ' . $downloadFile);
+        }
+
+        if ($type === 'detect') {
+            $type = mime_content_type($filepath);
+        }
+
+        header('Content-Type: ' . $type);
+        header('Content-Disposition: attachment; filename="' . basename($downloadFile) . '"');
+        header('Content-Length: ' . filesize($downloadFile));
+        readfile($downloadFile);
+    }
+
+    /**
+     * Download a CSV file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @param bool $delete
+     * @return void
+     * @throws Exception
+     */
+    public function downloadCsv(string $filename, string $filepath, bool $delete = false): void
+    {
+        $this->download($filename, $filepath, 'text/csv');
+        if ($delete) {
+            unlink($filename);
+        }
+    }
+
+    /**
+     * Download an Excel file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @param bool $delete
+     * @return void
+     * @throws Exception
+     */
+    public function downloadExcel(string $filename, string $filepath, bool $delete = false): void
+    {
+        $this->download($filename, $filepath, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        if ($delete) {
+            unlink($filename);
+        }
+    }
+
+    /**
+     * Download a JSON file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @param bool $delete
+     * @return void
+     * @throws Exception
+     */
+    public function downloadJson(string $filename, string $filepath, bool $delete = false): void
+    {
+        $this->download($filename, $filepath, 'application/json');
+        if ($delete) {
+            unlink($filename);
+        }
+    }
+
+    /**
+     * Download a PDF file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @param bool $delete
+     * @return void
+     * @throws Exception
+     */
+    public function downloadPdf(string $filename, string $filepath, bool $delete = false): void
+    {
+        $this->download($filename, $filepath, 'application/pdf');
+        if ($delete) {
+            unlink($filename);
+        }
+    }
+
+    /**
+     * Download a ZIP file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @param bool $delete
+     * @return void
+     * @throws Exception
+     */
+    public function downloadZip(string $filename, string $filepath, bool $delete = false): void
+    {
+        $this->download($filename, $filepath, 'application/zip');
+        if ($delete) {
+            unlink($filename);
+        }
     }
 }
