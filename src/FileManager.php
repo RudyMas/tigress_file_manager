@@ -6,7 +6,7 @@ use Exception;
 use ZipArchive;
 
 /**
- * Class Data Converter (PHP version 8.4)
+ * Class FileManager (PHP version 8.4)
  *
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
