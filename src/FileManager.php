@@ -11,7 +11,7 @@ use ZipArchive;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.16.0
+ * @version 2025.01.17.0
  * @package Tigress\FileManager
  */
 class FileManager
@@ -26,7 +26,7 @@ class FileManager
      */
     public static function version(): string
     {
-        return '2025.01.16';
+        return '2025.01.17';
     }
 
     /**
@@ -85,6 +85,22 @@ class FileManager
         }
         if (!is_dir($folder)) {
             @mkdir($folder, $mode, $allFolders) or die('Unable to create folder: ' . $folder);
+        }
+    }
+
+    /**
+     * Delete a file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @return void
+     */
+    public function deleteFile(string $filename, string $filepath): void
+    {
+        if ($filepath) {
+            unlink($filepath . '/' . $filename);
+        } else {
+            unlink($filename);
         }
     }
 
@@ -344,7 +360,7 @@ class FileManager
     {
         $this->download($filename, $filepath, 'text/csv');
         if ($delete) {
-            unlink($filename);
+            $this->deleteFile($filename, $filepath);
         }
     }
 
@@ -361,7 +377,7 @@ class FileManager
     {
         $this->download($filename, $filepath, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
         if ($delete) {
-            unlink($filename);
+            $this->deleteFile($filename, $filepath);
         }
     }
 
@@ -378,7 +394,7 @@ class FileManager
     {
         $this->download($filename, $filepath, 'application/json');
         if ($delete) {
-            unlink($filename);
+            $this->deleteFile($filename, $filepath);
         }
     }
 
@@ -395,7 +411,7 @@ class FileManager
     {
         $this->download($filename, $filepath, 'application/pdf');
         if ($delete) {
-            unlink($filename);
+            $this->deleteFile($filename, $filepath);
         }
     }
 
@@ -412,7 +428,7 @@ class FileManager
     {
         $this->download($filename, $filepath, 'application/zip');
         if ($delete) {
-            unlink($filename);
+            $this->deleteFile($filename, $filepath);
         }
     }
 }
