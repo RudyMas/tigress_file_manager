@@ -11,7 +11,7 @@ use ZipArchive;
  * @author Rudy Mas <rudy.mas@rudymas.be>
  * @copyright 2024-2025, rudymas.be. (http://www.rudymas.be/)
  * @license https://opensource.org/licenses/GPL-3.0 GNU General Public License, version 3 (GPL-3.0)
- * @version 2025.01.17.0
+ * @version 2025.02.07.0
  * @package Tigress\FileManager
  */
 class FileManager
@@ -26,7 +26,7 @@ class FileManager
      */
     public static function version(): string
     {
-        return '2025.01.17';
+        return '2025.02.07';
     }
 
     /**
@@ -410,6 +410,23 @@ class FileManager
     public function downloadPdf(string $filename, string $filepath, bool $delete = false): void
     {
         $this->download($filename, $filepath, 'application/pdf');
+        if ($delete) {
+            $this->deleteFile($filename, $filepath);
+        }
+    }
+
+    /**
+     * Download a XML file
+     *
+     * @param string $filename
+     * @param string $filepath
+     * @param bool $delete
+     * @return void
+     * @throws Exception
+     */
+    public function downloadXml(string $filename, string $filepath, bool $delete = false): void
+    {
+        $this->download($filename, $filepath, 'application/xml');
         if ($delete) {
             $this->deleteFile($filename, $filepath);
         }
